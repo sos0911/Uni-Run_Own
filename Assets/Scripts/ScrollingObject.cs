@@ -9,5 +9,9 @@ public class ScrollingObject : MonoBehaviour {
         // 1초에 10만큼 이동
         if(!GameManager.instance.isGameover)
             transform.Translate(Vector3.left * speed * Time.deltaTime);
+        // start platform 정리
+        // destroy vs setactive(false)..
+        if (gameObject.tag == "StartPlatform" && transform.position.x < -20.0f)
+            gameObject.SetActive(false);
     }
 }
