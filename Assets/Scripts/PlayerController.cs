@@ -26,6 +26,9 @@ public class PlayerController : MonoBehaviour {
         // 사용자 입력을 감지하고 점프하는 처리
         if (isDead)
         {
+            // 한없이 떨어지는 것을 방지
+            if (transform.position.y < -10.0f)
+                Destroy(gameObject);
             return;
         }
 
@@ -59,14 +62,17 @@ public class PlayerController : MonoBehaviour {
         // 사망 처리
         // 애니메이션 fsm 트리거 
         animator.SetTrigger("Die");
-
+        // 사망 audio 재생
         playerAudio.clip = deathClip;
         playerAudio.Play();
 
         // 속도를 0으로
+        // 그렇지 않으면 죽는 순간 날아가면서 사망한다든가 하는 상황 발생
         playerRigidbody.velocity = Vector2.zero;
         
         isDead = true;
+
+        GameManager.instance.OnPlayerDead();
    }
 
    private void OnTriggerEnter2D(Collider2D other) {
