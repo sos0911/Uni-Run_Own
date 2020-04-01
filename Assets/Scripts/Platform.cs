@@ -4,7 +4,9 @@
 public class Platform : MonoBehaviour {
     public GameObject[] obstacles; // 장애물 오브젝트들
     private bool stepped = false; // 플레이어 캐릭터가 밟았었는가
-    private int stepscore = 1; // 밟을 때마다 오르는 점수
+
+    public static int Initialstepscore = 1; // 밟을 때마다 오르는 처음 점수
+    public static int stepscore = 1; // 밟을 때마다 오르는 현재 점수
 
     // 컴포넌트가 활성화될때 마다 매번 실행되는 메서드
     // 발판 오브젝트를 1-2개 만들어놓고 계속 껐다켰다 하면서 재활용할 생각
@@ -33,5 +35,10 @@ public class Platform : MonoBehaviour {
             // 밟을때마다 1점
             GameManager.instance.AddScore(stepscore);
         }
+    }
+
+    public static void ModifyScore(int newscore)
+    {
+        stepscore = newscore;
     }
 }
