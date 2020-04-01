@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
-
+using UnityEngine.EventSystems;
 // PlayerController는 플레이어 캐릭터로서 Player 게임 오브젝트를 제어한다.
 public class PlayerController : MonoBehaviour {
+   public AudioClip Jumpclip; // 점프시 재생
    public AudioClip deathClip; // 사망시 재생할 오디오 클립
    public float jumpForce = 700f; // 점프 힘
 
@@ -11,7 +12,6 @@ public class PlayerController : MonoBehaviour {
 
    private Rigidbody2D playerRigidbody; // 사용할 리지드바디 컴포넌트
    private Animator animator; // 사용할 애니메이터 컴포넌트
-   private AudioSource playerAudio; // 사용할 오디오 소스 컴포넌트
 
    private void Start() {
         // 초기화
@@ -19,7 +19,6 @@ public class PlayerController : MonoBehaviour {
         // private부분 일괄캐싱
         playerRigidbody = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        playerAudio = GetComponent<AudioSource>();
    }
 
    private void Update() {
@@ -34,24 +33,29 @@ public class PlayerController : MonoBehaviour {
 
         // 점프요청이 들어왔고 아직 점프 2번이상 안함 >> 점프가능!
         // 점프도중에 길게 누르고 있는만큼 더 멀리 점프하나보다..
-        if(Input.GetMouseButtonDown(0) && jumpCount < 2)
+
+        // 무조건 paused가 안걸린 경우에만 점프가능!
+        if (!EventSystem.current.IsPointerOverGameObject())
         {
-            jumpCount++;
-            // 점프직전 속도를 0으로 변경
-            // 이단점프를 하게되면 아래로 떨어질때 이처리를 안할시 위로 안올라갈 수도 있기 때문
-            playerRigidbody.velocity = Vector2.zero;
-            // y축 윗방향으로 힘을 준다. 포물선 이동
-            playerRigidbody.AddForce(new Vector2(0, jumpForce));
-            // 뛰는 소리 재생
-            // jumpclip은 player에 붙여진 상태이므로 사용가능
-            playerAudio.Play();
-        }
-        // 버튼이 unpressed && 캐릭터 y축 윗방향으로 이동중
-        else if(Input.GetMouseButtonUp(0) && playerRigidbody.velocity.y > 0)
-        {
-            // 낙하처리
-            // 속도가 계속 깎여서 아래로 내려가게 됨
-            playerRigidbody.velocity *= 0.5f;
+            if (Input.GetMouseButtonDown(0) && jumpCount < 2)
+            {
+                // 뛰는 소리 재생
+                SoundManager.instance.PlaySingle(Jumpclip);
+                jumpCount++;
+                // 점프직전 속도를 0으로 변경
+                // 이단점프를 하게되면 아래로 떨어질때 이처리를 안할시 위로 안올라갈 수도 있기 때문
+                playerRigidbody.velocity = Vector2.zero;
+                // y축 윗방향으로 힘을 준다. 포물선 이동
+                playerRigidbody.AddForce(new Vector2(0, jumpForce));
+
+            }
+            // 점프버튼이 unpressed && pause 버튼 사용x && 캐릭터 y축 윗방향으로 이동중
+            else if (Input.GetMouseButtonUp(0) && playerRigidbody.velocity.y > 0)
+            {
+                // 낙하처리
+                // 속도가 계속 깎여서 아래로 내려가게 됨
+                playerRigidbody.velocity *= 0.5f;
+            }
         }
 
         // bool 상태변경 >> fsm으로 플레이어 애니메이션 조정
@@ -63,8 +67,7 @@ public class PlayerController : MonoBehaviour {
         // 애니메이션 fsm 트리거 
         animator.SetTrigger("Die");
         // 사망 audio 재생
-        playerAudio.clip = deathClip;
-        playerAudio.Play();
+        SoundManager.instance.PlaySingle(deathClip);
 
         // 속도를 0으로
         // 그렇지 않으면 죽는 순간 날아가면서 사망한다든가 하는 상황 발생
